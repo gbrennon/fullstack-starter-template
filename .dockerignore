@@ -1,0 +1,17 @@
+node_modules
+coverage
+dist
+.git
+.gitignore
+**/*.log
+apps/**/dist
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,7 +1,7 @@
 import type { ServerOptions } from '../server/server';
 import { get } from 'env-var';
 import { config } from 'dotenv';
-config();
+config({ path: process.env.DOTENV_CONFIG_PATH || undefined });
 
 export const serverConfig: ServerOptions = {
   environment: get('NODE_ENV')

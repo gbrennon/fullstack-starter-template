@@ -1,11 +1,12 @@
 ## Only for local development or running tests
 
-version: '3.4'
+version: '3.8'
 
 services:
   postgres:
-    image: postgres:alpine
-    container_name: postgres
+    image: postgres:15-alpine
+    container_name: fs_template_postgres
+    restart: unless-stopped
     ports:
       - 5432:5432
     environment:
@@ -14,6 +15,39 @@ services:
       POSTGRES_DB: 'my_app'
     volumes:
       - postgres:/var/lib/postgresql/data
+
+  backend:
+    image: node:18-alpine
+    container_name: fs_template_backend
+    working_dir: /usr/src/app
+    depends_on:
+      - postgres
+    environment:
+      NODE_ENV: local
+      APP_PORT: 3000
+      API_PREFIX: /trpc
+      SECRET_KEY: supersecret
+      JWT_EXPIRES_IN: 1d
+      DATABASE_URL: postgresql://user:password@postgres:5432/my_app?schema=public
+    volumes:
+      - ..:/usr/src/app
+    command: sh -c "npm install && npx prisma migrate deploy && npx prisma generate && npm run backend:dev"
+    ports:
+      - 3000:3000
+
+  frontend:
+    image: node:18-alpine
+    container_name: fs_template_frontend
+    working_dir: /usr/src/app
+    depends_on:
+      - backend
+    environment:
+      VITE_APP_URL: http://localhost:3000/trpc
+    volumes:
+      - ..:/usr/src/app
+    command: sh -c "npm install && npm run frontend:dev"
+    ports:
+      - 4200:4200
 
 volumes:
   postgres:
