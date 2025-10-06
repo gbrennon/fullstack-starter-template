@@ -1,72 +1,56 @@
-import { Box, Heading } from '@chakra-ui/react';
+import { Box, Heading, VStack, Spinner, Text } from '@chakra-ui/react';
 import React from 'react';
+import { trpc } from '@utils/trpc';
+import TweetComposer from '../components/TweetComposer/TweetComposer';
+import Tweet from '../components/Tweet/Tweet';
 
 const Home = () => {
+  const {
+    data: tweets,
+    isLoading,
+    error,
+    refetch,
+  } = trpc.tweets.getAll.useQuery();
+
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" p={8}>
+        <Spinner size="lg" />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box p={8}>
+        <Text color="red.500">Error loading tweets: {error.message}</Text>
+      </Box>
+    );
+  }
+
   return (
-    <Box>
-      <Heading>Lorem ipsum</Heading>
+    <Box maxW="600px" mx="auto" p={4}>
+      <Heading mb={6} size="lg">
+        Home
+      </Heading>
 
-      <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</p>
+      <TweetComposer onTweetCreated={() => refetch()} />
 
-      <p>
-        Pellentesque habitant morbi tristique senectus et netus et malesuada
-        fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae,
-        ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam
-        egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend
-        leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum
-        erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean
-        fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci,
-        sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar
-        facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, tortor
-        neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat
-        volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis
-        luctus, metus
-      </p>
-
-      <p>
-        Pellentesque habitant morbi tristique senectus et netus et malesuada
-        fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae,
-        ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam
-        egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend
-        leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum
-        erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean
-        fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci,
-        sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar
-        facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, tortor
-        neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat
-        volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis
-        luctus, metus
-      </p>
-
-      <p>
-        Pellentesque habitant morbi tristique senectus et netus et malesuada
-        fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae,
-        ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam
-        egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend
-        leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum
-        erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean
-        fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci,
-        sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar
-        facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, tortor
-        neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat
-        volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis
-        luctus, metus
-      </p>
-
-      <p>
-        Pellentesque habitant morbi tristique senectus et netus et malesuada
-        fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae,
-        ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam
-        egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend
-        leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum
-        erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean
-        fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci,
-        sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar
-        facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, tortor
-        neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat
-        volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis
-        luctus, metus
-      </p>
+      <VStack spacing={0} align="stretch">
+        {tweets && tweets.length > 0 ? (
+          tweets.map((tweet) => (
+            <Tweet
+              key={tweet.id}
+              tweet={tweet}
+              onUpdate={() => refetch()}
+            />
+          ))
+        ) : (
+          <Text textAlign="center" color="gray.500" py={8}>
+            No tweets yet. Be the first to post!
+          </Text>
+        )}
+      </VStack>
     </Box>
   );
 };

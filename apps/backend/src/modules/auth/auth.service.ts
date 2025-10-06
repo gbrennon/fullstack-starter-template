@@ -1,6 +1,6 @@
 import { User } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
-import { SignInDto, SignUpDto } from './auth.dtos';
+import { SignInDto, SignUpDto, UpdateProfileDto } from './auth.dtos';
 import { sign } from 'jsonwebtoken';
 import { authConfig } from '../../configs/auth.config';
 import { hash, compare } from 'bcryptjs';
@@ -13,18 +13,37 @@ export const signUp = async (
   input: SignUpDto,
   ctx: Context
 ): Promise<UserResponse> => {
+  // Check if username already exists
+  const existingUser = await ctx.prisma.user.findUnique({
+    where: { username: input.username },
+  });
+
+  if (existingUser) {
+    throw new TRPCError({
+      message: 'Username already exists',
+      code: 'CONFLICT',
+    });
+  }
+
   const bcryptHash = await hash(input.password, 10);
 
   const user = await ctx.prisma.user.create({
     data: {
       email: input.email,
+      username: input.username,
+      displayName: input.displayName,
       password: bcryptHash,
       role: 'user',
     },
   });
+
   return {
     id: user.id,
     email: user.email,
+    username: user.username,
+    displayName: user.displayName,
+    bio: user.bio,
+    avatar: user.avatar,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
     role: user.role,
@@ -68,9 +87,36 @@ export const signIn = async (
   return {
     id: user.id,
     email: user.email,
+    username: user.username,
+    displayName: user.displayName,
+    bio: user.bio,
+    avatar: user.avatar,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
     role: user.role,
     accessToken: token,
+  };
+};
+
+export const updateProfile = async (
+  input: UpdateProfileDto,
+  userId: number,
+  ctx: Context
+): Promise<UserResponse> => {
+  const user = await ctx.prisma.user.update({
+    where: { id: userId },
+    data: input,
+  });
+
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    displayName: user.displayName,
+    bio: user.bio,
+    avatar: user.avatar,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    role: user.role,
   };
 };

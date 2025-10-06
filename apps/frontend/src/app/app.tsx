@@ -9,6 +9,7 @@ import AuthVerify from '../components/Auth/AuthVerify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Home from '../pages/Home';
+import Profile from '../pages/Profile';
 import { Box } from '@chakra-ui/react';
 
 export function App() {
@@ -27,6 +28,7 @@ export function App() {
         <SidebarWithHeader>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/profile/:username" element={<Profile />} />
             <Route path="/sign-up" element={<SignUpCard />} />
             <Route path="/login" element={<SignInCard />} />
             <Route path="*" element={<Box>Not Found</Box>} />

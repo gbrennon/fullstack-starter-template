@@ -1,20 +1,20 @@
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: fs_template_postgres
+    container_name: twitter_clone_postgres
     restart: unless-stopped
     ports:
       - 5432:5432
     environment:
       POSTGRES_USER: 'user'
       POSTGRES_PASSWORD: 'password'
-      POSTGRES_DB: 'my_app'
+      POSTGRES_DB: 'twitter_clone'
     volumes:
       - postgres:/var/lib/postgresql/data
 
   backend:
     image: node:18-alpine
-    container_name: fs_template_backend
+    container_name: twitter_clone_backend
     working_dir: /usr/src/app
     depends_on:
       - postgres
@@ -24,27 +24,24 @@ services:
       API_PREFIX: /trpc
       SECRET_KEY: supersecret
       JWT_EXPIRES_IN: 1d
-      DATABASE_URL: postgresql://user:password@postgres:5432/my_app?schema=public
+      DATABASE_URL: postgresql://user:password@postgres:5432/twitter_clone?schema=public
     volumes:
       - ..:/usr/src/app
-    # FIX 1: Install OpenSSL for Prisma AND use legacy-peer-deps
     command: sh -c "apk add --no-cache openssl && npm install --legacy-peer-deps && npx prisma migrate deploy && npx prisma generate && npm run backend:dev"
     ports:
       - 3000:3000
 
   frontend:
     image: node:18-alpine
-    container_name: fs_template_frontend
+    container_name: twitter_clone_frontend
     working_dir: /usr/src/app
     depends_on:
       - backend
     environment:
       VITE_APP_URL: http://localhost:3000/trpc
-      # FIX 3: Add correct internal DB URL in case frontend runs Prisma steps
-      DATABASE_URL: postgresql://user:password@postgres:5432/my_app?schema=public
+      DATABASE_URL: postgresql://user:password@postgres:5432/twitter_clone?schema=public
     volumes:
       - ..:/usr/src/app
-    # FIX 2: Corrected command (frontend:dev) & FIX 1: OpenSSL for any necessary Prisma steps
     command: sh -c "apk add --no-cache openssl && npm install --legacy-peer-deps && npm run frontend:dev"
     ports:
       - 4200:4200

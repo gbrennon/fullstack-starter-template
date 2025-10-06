@@ -18,13 +18,15 @@ import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { useForm } from 'react-hook-form';
 import { Link as RouterLink } from 'react-router-dom';
 
-export type EmailAndPassword = {
+export type SignUpFormData = {
   email: string;
+  username: string;
+  displayName: string;
   password: string;
 };
 
 type SignUpCardProps = {
-  onSubmit(values: EmailAndPassword): void;
+  onSubmit(values: SignUpFormData): void;
 };
 
 function SignUpCardUI({ onSubmit }: SignUpCardProps) {
@@ -33,7 +35,7 @@ function SignUpCardUI({ onSubmit }: SignUpCardProps) {
     handleSubmit,
     register,
     formState: { errors, isSubmitting },
-  } = useForm<EmailAndPassword>();
+  } = useForm<SignUpFormData>();
 
   return (
     <Flex
@@ -73,7 +75,41 @@ function SignUpCardUI({ onSubmit }: SignUpCardProps) {
                 />
               </FormControl>
               <FormControl isRequired>
-                <FormLabel htmlFor="name">Password</FormLabel>
+                <FormLabel htmlFor="username">Username</FormLabel>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="@username"
+                  {...register('username', {
+                    required: 'Username is required',
+                    minLength: {
+                      value: 3,
+                      message: 'Username must be at least 3 characters',
+                    },
+                    pattern: {
+                      value: /^[a-zA-Z0-9_]+$/,
+                      message: 'Username can only contain letters, numbers, and underscores',
+                    },
+                  })}
+                />
+              </FormControl>
+              <FormControl isRequired>
+                <FormLabel htmlFor="displayName">Display Name</FormLabel>
+                <Input
+                  id="displayName"
+                  type="text"
+                  placeholder="Your display name"
+                  {...register('displayName', {
+                    required: 'Display name is required',
+                    maxLength: {
+                      value: 100,
+                      message: 'Display name must be less than 100 characters',
+                    },
+                  })}
+                />
+              </FormControl>
+              <FormControl isRequired>
+                <FormLabel htmlFor="password">Password</FormLabel>
                 <InputGroup>
                   <Input
                     id="password"

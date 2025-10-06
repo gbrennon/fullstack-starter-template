@@ -11,10 +11,77 @@ datasource db {
 }
 
 model User {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+  email       String   @unique @db.VarChar(255)
+  username    String   @unique @db.VarChar(50)
+  displayName String   @db.VarChar(100)
+  bio         String?  @db.VarChar(500)
+  avatar      String?  @db.VarChar(255)
+  role        String   @db.VarChar(255)
+  password    String   @db.VarChar(255)
+  
+  // Relations
+  tweets      Tweet[]
+  likes       Like[]
+  retweets    Retweet[]
+  followers   Follow[] @relation("UserFollowers")
+  following   Follow[] @relation("UserFollowing")
+  
+  @@map("users")
+}
+
+model Tweet {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
-  email     String   @unique @db.VarChar(255)
-  role      String   @db.VarChar(255)
-  password  String   @db.VarChar(255)
+  content   String   @db.VarChar(280)
+  authorId  Int
+  
+  // Relations
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes     Like[]
+  retweets  Retweet[]
+  
+  @@map("tweets")
+}
+
+model Like {
+  id      Int @id @default(autoincrement())
+  userId  Int
+  tweetId Int
+  
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tweet Tweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, tweetId])
+  @@map("likes")
+}
+
+model Retweet {
+  id      Int @id @default(autoincrement())
+  userId  Int
+  tweetId Int
+  
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tweet Tweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, tweetId])
+  @@map("retweets")
+}
+
+model Follow {
+  id          Int @id @default(autoincrement())
+  followerId  Int
+  followingId Int
+  
+  // Relations
+  follower  User @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  
+  @@unique([followerId, followingId])
+  @@map("follows")
 }
