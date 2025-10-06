@@ -1,7 +1,3 @@
-## Only for local development or running tests
-
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -31,7 +27,8 @@ services:
       DATABASE_URL: postgresql://user:password@postgres:5432/my_app?schema=public
     volumes:
       - ..:/usr/src/app
-    command: sh -c "npm install && npx prisma migrate deploy && npx prisma generate && npm run backend:dev"
+    # FIX 1: Install OpenSSL for Prisma AND use legacy-peer-deps
+    command: sh -c "apk add --no-cache openssl && npm install --legacy-peer-deps && npx prisma migrate deploy && npx prisma generate && npm run backend:dev"
     ports:
       - 3000:3000
 
@@ -43,9 +40,12 @@ services:
       - backend
     environment:
       VITE_APP_URL: http://localhost:3000/trpc
+      # FIX 3: Add correct internal DB URL in case frontend runs Prisma steps
+      DATABASE_URL: postgresql://user:password@postgres:5432/my_app?schema=public
     volumes:
       - ..:/usr/src/app
-    command: sh -c "npm install && npm run frontend:dev"
+    # FIX 2: Corrected command (frontend:dev) & FIX 1: OpenSSL for any necessary Prisma steps
+    command: sh -c "apk add --no-cache openssl && npm install --legacy-peer-deps && npm run frontend:dev"
     ports:
       - 4200:4200
 
